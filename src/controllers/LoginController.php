@@ -1,4 +1,5 @@
 <?php
+
 namespace src\controllers;
 
 use \core\Controller;
@@ -7,42 +8,70 @@ use \src\handlers\LoginHandler;
 class LoginController extends Controller
 {
 
-    public function signin() {
+    public function signin()
+    {
         $flash = '';
-        if(!empty($_SESSION['flash'])) {
+        if (!empty($_SESSION['flash'])) {
             $flash = $_SESSION['flash'];
             $_SESSION['flash'] = '';
         }
         $this->render('signin', [
-            'flash' =>$flash
+            'flash' => $flash
         ]);
     }
-    public function signupAction() {
+    public function signinAction()
+    {
         $email = filter_input(INPUT_POST, 'email', FILTER_VALIDATE_EMAIL);
         $password = filter_input(INPUT_POST, 'password');
 
-        if($email && $password) {
+        if ($email && $password) {
             $token = LoginHandler::verifyLogin($email, $password);
-            if($token) {
+            if ($token) {
                 $_SESSION['token'] = $token;
                 $this->redirect('/');
-            }else {
+            } else {
                 $_SESSION['flash'] = 'E-mail e/ou senha não conferem.';
                 $this->redirect('/login');
             }
-        }else {
+        } else {
             $this->redirect('/login');
         }
     }
-    public function signup() {
+
+    public function signup()
+    {
         $flash = '';
-        if(!empty($_SESSION['flash'])) {
+        if (!empty($_SESSION['flash'])) {
             $flash = $_SESSION['flash'];
             $_SESSION['flash'] = '';
         }
         $this->render('signup', [
-            'flash' =>$flash
+            'flash' => $flash
         ]);
-        
+    }
+    public function signupAction()
+    {
+        $name = filter_input(INPUT_POST, 'name');
+        $email = filter_input(INPUT_POST, 'email', FILTER_VALIDATE_EMAIL);
+        $password = filter_input(INPUT_POST, 'password');
+        $birthdate = filter_input(INPUT_POST, 'birthdate');
+
+        if ($name && $email && $password && $birthdate) {
+            $birthdate = explode('/', $birthdate);
+            if (count($birthdate) != 3) {
+                $_SESSION['flash'] = 'Data de nascimento inválida';
+                $this->redirect('/cadastro');
+            }
+
+            $birthdate = $birthdate[2] . '-' . $birthdate[1] . '-' . $birthdate[0];
+            if (strtotime($birthdate) === false) {
+                $_SESSION['flash'] = 'Data de nascimento inválida';
+                $this->redirect('/cadastro');
+            }
+
+            
+        } else {
+            $this->redirect('/cadastro');
+        }
     }
 }
